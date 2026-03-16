@@ -1,0 +1,4 @@
+rich
+questionary
+python-dotenv
+jinja2

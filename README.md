@@ -1,5 +1,3 @@
-# KaliAD-Wrapper
-
 # KaliAD-Wrapper v1.2
 
 Автономный wrapper для пентеста Active Directory на Kali Linux.
@@ -15,10 +13,3 @@
 - Kerberoasting
 
 Автоматический HTML-отчёт + JSON.
-
-
-chmod +x setup.sh
-./setup.sh
-cp .env.example .env
-nano .env
-python3 main.py
