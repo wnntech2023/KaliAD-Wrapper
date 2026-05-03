@@ -3,7 +3,15 @@ from utils.runner import run_tool
 
 def parse_ldap(out: str):
     entries = out.count("dn:")
-    return {"entries": entries, "summary": f"Найдено объектов: {entries}"}
+    users = out.count("objectClass: user") + out.count("CN=Users")
+    groups = out.count("objectClass: group") + out.count("CN=Groups")
+    summary = f"Всего объектов: {entries} | Пользователей: {users} | Групп: {groups}"
+    return {
+        "entries": entries,
+        "users_found": users,
+        "groups_found": groups,
+        "summary": summary
+    }
 
 def run_ldap_check():
     base = f"DC={CONFIG['domain'].replace('.', ',DC=')}"
