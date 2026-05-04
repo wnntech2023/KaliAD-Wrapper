@@ -10,7 +10,8 @@ def parse_nxc(out: str):
         "users_found": users,
         "groups_found": groups,
         "admins_found": admins,
-        "summary": summary
+        "summary": summary,
+        "raw_output": out
     }
 
 def run_cme_check():
@@ -18,12 +19,34 @@ def run_cme_check():
     cmds = [
         base + ["--users"],
         base + ["--groups"],
-        base + ["--admin-count"]
+        base + ["--admin-count"],
+        base + ["--pass-pol"],
+        base + ["--shares"]
     ]
-    subresults = [run_tool(cmd, f"NetExec-{i+1}", parse_nxc) for i, cmd in enumerate(cmds)]
+    
+    subresults = []
+    total_duration = 0.0
+    
+    for i, cmd in enumerate(cmds):
+        res = run_tool(cmd, f"NetExec-{i+1}", parse_nxc)
+        subresults.append(res)
+        # Суммируем время выполнения подкоманд
+        try:
+            duration_str = res.get("duration", "0:00:00")
+            h, m, s = map(float, duration_str.split(':'))
+            total_duration += h*3600 + m*60 + s
+        except:
+            pass
     
     return {
         "tool": "NetExec (nxc) — полный скан",
         "status": "success",
-        "data": {"subresults": subresults}
+        "duration": f"{total_duration//3600:02.0f}:{(total_duration%3600)//60:02.0f}:{total_duration%60:05.3f}",
+        "data": {
+            "subresults": subresults,
+            "raw_output": "\n\n".join([s.get("data", {}).get("raw_output", "") for s in subresults]),
+            "summary": f"Пользователей: {sum(s.get('data', {}).get('users_found', 0) for s in subresults)} | "
+                       f"Групп: {sum(s.get('data', {}).get('groups_found', 0) for s in subresults)} | "
+                       f"Администраторов: {sum(s.get('data', {}).get('admins_found', 0) for s in subresults)}"
+        }
     }
