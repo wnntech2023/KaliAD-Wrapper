@@ -1,6 +1,7 @@
 from config import CONFIG
 from utils.runner import run_tool
 from pathlib import Path
+import re
 
 def parse_certipy(out: str):
     total_match = re.search(r"Found\s+(\d+)\s+certificate templates", out)
@@ -15,7 +16,8 @@ def parse_certipy(out: str):
         "vulnerable_templates": vulnerable,
         "enabled_templates": enabled,
         "total_templates": total,
-        "summary": summary
+        "summary": summary,
+        "raw_output": out
     }
 
 def run_certipy_check():
@@ -29,4 +31,15 @@ def run_certipy_check():
         "-dc-ip", CONFIG['dc_ip']
     ]
     
-    return run_tool(cmd, "Certipy-AD (certipy-ad)", parse_certipy)
+    result = run_tool(cmd, "Certipy-AD (certipy-ad)", parse_certipy)
+    
+    # Читаем полный .txt отчёт
+    txt_files = list(out_dir.glob("*Certipy.txt"))
+    if txt_files:
+        try:
+            full_report = txt_files[0].read_text(encoding="utf-8", errors="ignore")
+            result["data"]["full_report"] = full_report
+        except:
+            pass
+    
+    return result
