@@ -5,7 +5,7 @@ def parse_enum(out: str):
     users = out.count("user(s)") + out.count("Found 15 user") + out.count("username:")
     groups = out.count("group(s)") + out.count("Found 55 group") + out.count("groupname:")
     shares = out.count("share(s)")
-    summary = f"Пользователей: {users} | Групп: {groups} | Шар: {shares}"
+    summary = f"Пользователей: {users} | Групп: {groups} | Общих ресурсов (SMB): {shares}"
     return {
         "users_found": users,
         "groups_found": groups,
